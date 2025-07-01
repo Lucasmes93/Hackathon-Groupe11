@@ -12,7 +12,7 @@ const FaceRecognition: React.FC = () => {
 
     useEffect(() => {
         const loadModels = async () => {
-            const MODEL_URL = process.env.PUBLIC_URL + "/models";
+            const MODEL_URL = import.meta.env.BASE_URL + "models";
             try {
                 await Promise.all([
                     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -35,7 +35,7 @@ const FaceRecognition: React.FC = () => {
 
             for (const label of labels) {
                 try {
-                    const imageUrl = `${process.env.PUBLIC_URL}/known/${label}.jpg`;
+                    const imageUrl = `${import.meta.env.BASE_URL}known/${label}.jpg`;
                     const img = await faceapi.fetchImage(imageUrl);
 
                     const detection = await faceapi
