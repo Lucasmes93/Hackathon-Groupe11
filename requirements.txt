@@ -1,0 +1,10 @@
+fastapi==0.97.0
+uvicorn==0.22.0
+sqlalchemy
+pymysql
+cloud-sql-python-connector[pymysql]
+python-dotenv==0.20.0
+Jinja2==3.1.2
+python-multipart==0.0.5
+gunicorn==20.1.0
+slowapi

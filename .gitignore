@@ -1,0 +1,51 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+.env
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+
+# === dotenv files ===
+.env
+.env.*
+
+# === Docker ===
+*.log
+docker-compose.override.yml
+*.pid
+
+# === IDEs ===
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# === OS-specific ===
+.DS_Store
+Thumbs.db
+
+# === GCP credentials ===
+credentials.json
+
+# === Test coverage ===
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# === Jupyter (if any) ===
+.ipynb_checkpoints/
+
+# === MySQL dumps (if any) ===
+*.sql
+*.dump
+
+# === Misc ===
+*.sqlite3
