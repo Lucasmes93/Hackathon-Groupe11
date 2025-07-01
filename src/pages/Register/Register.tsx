@@ -7,7 +7,7 @@ import { LangContext } from '../../App';
 
 const translations = {
   fr: {
-    title: 'Inscription Étudiant',
+    title: 'Pré-inscription Étudiant',
     lastName: 'Nom',
     firstName: 'Prénom',
     birthDate: 'Date de naissance',
