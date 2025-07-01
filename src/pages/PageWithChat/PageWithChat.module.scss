@@ -196,6 +196,39 @@
   margin-top: 2px;
 }
 
+.lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 24px;
+}
+
+.lang-switch button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.lang-switch button:hover,
+.active-lang {
+  color: #ff4609;
+  text-decoration: underline;
+}
+
+.flag {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(50,25,127,0.10);
+  vertical-align: middle;
+}
+
 @media (max-width: 900px) {
   .values-list {
     flex-direction: column;
