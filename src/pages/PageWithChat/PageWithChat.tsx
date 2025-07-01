@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import ChatBox from '../../components/ChatBox/ChatBox';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 import styles from './PageWithChat.module.scss';
-import estiamLogo from '../../assets/estiam_logo_header.png';
-import flagFr from '../../assets/flag_fr.png';
-import flagEn from '../../assets/flag_en.png';
+import { LangContext } from '../../App';
 
 const translations = {
   fr: {
@@ -18,7 +18,9 @@ const translations = {
       { title: 'Accompagnement', desc: 'Un suivi personnalisé pour chaque étudiant.' },
       { title: 'Ouverture', desc: "Des campus partout en France et à l'international." },
     ],
-    footer: '© ' + new Date().getFullYear() + ' ESTIAM. Tous droits réservés.'
+    footer: '© ' + new Date().getFullYear() + ' ESTIAM. Tous droits réservés.',
+    chatOpen: 'Ouvrir le chat',
+    chatClose: 'Fermer le chat',
   },
   en: {
     groupName: 'HackSquad',
@@ -32,45 +34,20 @@ const translations = {
       { title: 'Support', desc: 'Personalized guidance for every student.' },
       { title: 'Openness', desc: 'Campuses all over France and abroad.' },
     ],
-    footer: '© ' + new Date().getFullYear() + ' ESTIAM. All rights reserved.'
+    footer: '© ' + new Date().getFullYear() + ' ESTIAM. All rights reserved.',
+    chatOpen: 'Open chat',
+    chatClose: 'Close chat',
   }
 };
 
 const PageWithChat: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [lang, setLang] = useState<'fr' | 'en'>('fr');
+  const { lang } = useContext(LangContext);
   const t = translations[lang];
 
   return (
     <div className={styles['page-container']}>
-      <header className={styles['header']}>
-        <img
-          src={estiamLogo}
-          alt="Logo Estiam"
-          className={styles['logo']}
-        />
-        <div className={styles['group-info']}>
-          <span className={styles['group-name']}>{t.groupName}</span>
-          <span className={styles['group-number']}>{t.groupNumber}</span>
-        </div>
-        <div className={styles['lang-switch']}>
-          <button
-            className={lang === 'fr' ? styles['active-lang'] : ''}
-            onClick={() => setLang('fr')}
-            aria-label="Français"
-          >
-            <img src={flagFr} alt="Français" className={styles['flag']} />
-          </button>
-          <span> | </span>
-          <button
-            className={lang === 'en' ? styles['active-lang'] : ''}
-            onClick={() => setLang('en')}
-            aria-label="English"
-          >
-            <img src={flagEn} alt="English" className={styles['flag']} />
-          </button>
-        </div>
-      </header>
+      <Header />
       <section className={styles['hero']}>
         <h1>{t.heroTitle}</h1>
         <p>{t.heroDesc}</p>
@@ -94,15 +71,13 @@ const PageWithChat: React.FC = () => {
           ))}
         </div>
       </section>
-      <footer className={styles['footer']} id="contact">
-        <p>{t.footer}</p>
-      </footer>
+      <Footer />
       <button
         className={styles['chatbox-fab']}
         onClick={() => setOpen(o => !o)}
-        aria-label={open ? 'Fermer le chat' : 'Ouvrir le chat'}
+        aria-label={open ? t.chatClose : t.chatOpen}
       >
-        {open ? '✖' : '💬'}
+        {open ? '\u2716' : '\ud83d\udcac'}
       </button>
       {open && (
         <div className={styles['chatbox-fixed']}>
