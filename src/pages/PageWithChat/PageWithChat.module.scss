@@ -1,0 +1,242 @@
+.page-container {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 40px 16px 40px;
+  background: #32197f;
+  box-shadow: 0 2px 8px rgba(50,25,127,0.04);
+  position: relative;
+}
+
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  width: 150px;
+  height: auto;
+  margin-bottom: 0;
+  position: absolute;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.nav {
+  display: flex;
+  gap: 32px;
+}
+
+.nav a {
+  color: #32197f;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.nav a:hover {
+  color: #ff4609;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px 48px 24px;
+  background: linear-gradient(120deg, #f6f4ff 0%, #fff 100%);
+  text-align: center;
+}
+
+.hero h1 {
+  color: #32197f;
+  font-size: 2.7rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.hero p {
+  color: #32197f;
+  font-size: 1.25rem;
+  margin-bottom: 32px;
+  max-width: 600px;
+}
+
+.cta {
+  display: inline-block;
+  background: #ff4609;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 14px 36px;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(50,25,127,0.08);
+  transition: background 0.2s, transform 0.1s;
+}
+
+.cta:hover {
+  background: #32197f;
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+}
+
+.values {
+  background: #f6f4ff;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.values h2 {
+  color: #32197f;
+  font-size: 2rem;
+  margin-bottom: 32px;
+}
+
+.values-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+}
+
+.values-list > div {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(50,25,127,0.06);
+  padding: 28px 32px;
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.values-list strong {
+  color: #ff4609;
+  font-size: 1.2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.values-list p {
+  color: #32197f;
+  font-size: 1rem;
+}
+
+.footer {
+  background: #32197f;
+  color: #fff;
+  text-align: center;
+  padding: 24px 0 16px 0;
+  margin-top: auto;
+  font-size: 1rem;
+}
+
+.chatbox-fixed {
+  position: fixed;
+  right: 32px;
+  bottom: 100px;
+  z-index: 1000;
+}
+
+.chatbox-fab {
+  position: fixed;
+  right: 40px;
+  bottom: 32px;
+  z-index: 1100;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #32197f 0%, #ff4609 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(50,25,127,0.18);
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.chatbox-fab:hover {
+  background: linear-gradient(90deg, #ff4609 0%, #32197f 100%);
+  transform: scale(1.08);
+}
+
+.group-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+}
+
+.group-name {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.group-number {
+  color: #ff4609;
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 24px;
+}
+
+.lang-switch button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.lang-switch button:hover,
+.active-lang {
+  color: #ff4609;
+  text-decoration: underline;
+}
+
+.flag {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(50,25,127,0.10);
+  vertical-align: middle;
+}
+
+@media (max-width: 900px) {
+  .values-list {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .header {
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px 12px 12px 12px;
+  }
+} 
