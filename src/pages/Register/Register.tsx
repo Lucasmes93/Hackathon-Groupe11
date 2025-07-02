@@ -126,22 +126,55 @@ const Register: React.FC = () => {
         <h2 className={styles['register-title']}>{t.title}</h2>
         <form onSubmit={handleSubmit} className={styles['register-form']}>
 
-          {/* Champs texte */}
-          {['nom', 'prenom', 'dateNaissance', 'email'].map(field => (
-            <div className={styles['form-group']} key={field}>
-              <label>
-                {t[field as keyof typeof t]} <span className={styles.required}>*</span>:
-              </label>
-              <input
-                type={field === 'dateNaissance' ? 'date' : field === 'email' ? 'email' : 'text'}
-                name={field}
-                value={(formData as any)[field]}
-                onChange={handleChange}
-                required
-                className={styles.input}
-              />
-            </div>
-          ))}
+          {/* Champs texte explicites */}
+          <div className={styles['form-group']}>
+            <label htmlFor="nom">{t.lastName} <span className={styles.required}>*</span>:</label>
+            <input
+              type="text"
+              id="nom"
+              name="nom"
+              value={formData.nom}
+              onChange={handleChange}
+              required
+              className={styles.input}
+            />
+          </div>
+          <div className={styles['form-group']}>
+            <label htmlFor="prenom">{t.firstName} <span className={styles.required}>*</span>:</label>
+            <input
+              type="text"
+              id="prenom"
+              name="prenom"
+              value={formData.prenom}
+              onChange={handleChange}
+              required
+              className={styles.input}
+            />
+          </div>
+          <div className={styles['form-group']}>
+            <label htmlFor="dateNaissance">{t.birthDate} <span className={styles.required}>*</span>:</label>
+            <input
+              type="date"
+              id="dateNaissance"
+              name="dateNaissance"
+              value={formData.dateNaissance}
+              onChange={handleChange}
+              required
+              className={styles.input}
+            />
+          </div>
+          <div className={styles['form-group']}>
+            <label htmlFor="email">{t.email} <span className={styles.required}>*</span>:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className={styles.input}
+            />
+          </div>
 
           {/* Zone webcam/photo */}
           <div className={styles['form-group']}>
