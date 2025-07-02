@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
@@ -90,8 +90,8 @@ def read_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db))
 
 @app.post("/upload", operation_id="upload_picture")
 async def upload_image(
-    name: str,
-    surname: str,
+    name: str = Form(...),
+    surname: str = Form(...),
     image: UploadFile = File(...)
 ):
     os.makedirs("public/known", exist_ok=True)

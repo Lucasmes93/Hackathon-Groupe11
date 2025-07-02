@@ -125,20 +125,44 @@ label {
 .photo-preview {
   text-align: center;
   margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.remove-photo-btn {
+  background: #ff5500;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 18px;
+  box-shadow: 0 2px 8px rgba(50,25,127,0.08);
+  transition: background 0.2s, transform 0.1s;
+}
+
+.remove-photo-btn:hover {
+  background: #5e2fc0;
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
 }
 
 .submit-btn {
   background: #ff5500;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 16px 0;
-  font-size: 1.15rem;
-  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   margin-top: 18px;
   width: 100%;
-  max-width: 320px;
+  max-width: 200px;
   box-shadow: 0 2px 8px rgba(50,25,127,0.08);
   transition: background 0.2s, transform 0.1s;
   align-self: center;
@@ -148,4 +172,42 @@ label {
   background: #5e2fc0;
   color: #fff;
   transform: translateY(-2px) scale(1.04);
-} 
+}
+
+.consent-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 auto 8px auto;
+  text-align: center;
+}
+
+.consent-checkbox {
+  width: 20px;
+  height: 25px;
+  accent-color: #5e2fc0;
+  margin-right: 12px;
+  vertical-align: middle;
+}
+
+.drop-area {
+  border: 2px dashed #5e2fc0;
+  border-radius: 10px;
+  padding: 16px;
+  background: #f7f8fa;
+  color: #5e2fc0;
+  text-align: center;
+  cursor: pointer;
+  max-width: 360px;
+  margin-top: 12px;
+
+  label {
+    display: block;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+}

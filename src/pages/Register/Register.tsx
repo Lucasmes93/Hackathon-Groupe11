@@ -57,7 +57,6 @@ const Register: React.FC = () => {
   });
   const [consent, setConsent] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
   const webcamRef = useRef<Webcam>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,14 +73,17 @@ const Register: React.FC = () => {
     }
   };
 
-  const uploadPhotoToServer = async (photoData: string) => {
+  const uploadPhotoToServer = async (photoData: string, name: string, surname: string) => {
     try {
       const blob = await fetch(photoData).then(res => res.blob());
-      const formData = new FormData();
-      formData.append('image', blob, `student_${Date.now()}.jpg`);
+      const form = new FormData();
+      form.append('name', name);
+      form.append('surname', surname);
+      form.append('image', blob, `student_${Date.now()}.jpg`);
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/upload`, {
         method: 'POST',
-        body: formData,
+        body: form,
       });
 
       if (!response.ok) {
@@ -109,7 +111,7 @@ const Register: React.FC = () => {
     try {
       let photoUrl = '';
       if (formData.photo) {
-        photoUrl = await uploadPhotoToServer(formData.photo);
+        photoUrl = await uploadPhotoToServer(formData.photo, formData.prenom, formData.nom);
       }
 
       const requestBody = {
@@ -119,6 +121,7 @@ const Register: React.FC = () => {
         Date_de_naissance: formData.dateNaissance,
         Photo: photoUrl
       };
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students`, {
         method: 'POST',
         headers: {
@@ -141,14 +144,9 @@ const Register: React.FC = () => {
         photo: ''
       });
       setConsent(false);
-
     } catch (error) {
       console.error('Error:', error);
-      toast.error(
-        typeof error === 'object' && error !== null && 'message' in error
-          ? (error as { message: string }).message
-          : t.error
-      );
+      toast.error(t.error);
     } finally {
       setIsSubmitting(false);
     }
@@ -156,67 +154,26 @@ const Register: React.FC = () => {
 
   return (
     <div className={styles['register-outer']}>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
-      <div className={styles['header-full']}>
-        <Header />
-      </div>
+      <ToastContainer position="top-right" autoClose={5000} theme="colored" />
+      <div className={styles['header-full']}><Header /></div>
       <div className={styles['register-container']}>
         <h2 className={styles['register-title']}>{t.title}</h2>
         <form onSubmit={handleSubmit} className={styles['register-form']}>
           <div className={styles['form-group']}>
             <label>{t.lastName} <span className={styles.required}>*</span>:</label>
-            <input
-              type="text"
-              name="nom"
-              value={formData.nom}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
+            <input type="text" name="nom" value={formData.nom} onChange={handleChange} required className={styles['input']} />
           </div>
           <div className={styles['form-group']}>
             <label>{t.firstName} <span className={styles.required}>*</span>:</label>
-            <input
-              type="text"
-              name="prenom"
-              value={formData.prenom}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
+            <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} required className={styles['input']} />
           </div>
           <div className={styles['form-group']}>
             <label>{t.birthDate} <span className={styles.required}>*</span>:</label>
-            <input
-              type="date"
-              name="dateNaissance"
-              value={formData.dateNaissance}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
+            <input type="date" name="dateNaissance" value={formData.dateNaissance} onChange={handleChange} required className={styles['input']} />
           </div>
           <div className={styles['form-group']}>
             <label>{t.email} <span className={styles.required}>*</span>:</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
+            <input type="email" name="email" value={formData.email} onChange={handleChange} required className={styles['input']} />
           </div>
           <div className={styles['form-group']}>
             <label>{t.takePhoto}:</label>
@@ -229,12 +186,7 @@ const Register: React.FC = () => {
               videoConstraints={{ facingMode: 'user' }}
               className={styles['webcam']}
             />
-            <button
-              type="button"
-              onClick={capturePhoto}
-              className={styles['capture-btn']}
-              disabled={!webcamRef.current}
-            >
+            <button type="button" onClick={capturePhoto} className={styles['capture-btn']} disabled={!webcamRef.current}>
               {t.capture}
             </button>
           </div>
@@ -245,40 +197,20 @@ const Register: React.FC = () => {
             </div>
           )}
           <div className={styles['consent-group']}>
-            <input
-              type="checkbox"
-              id="consent"
-              checked={consent}
-              onChange={e => setConsent(e.target.checked)}
-              required
-              className={styles['consent-checkbox']}
-            />
+            <input type="checkbox" id="consent" checked={consent} onChange={e => setConsent(e.target.checked)} required className={styles['consent-checkbox']} />
             <label htmlFor="consent" className={styles['consent-label']}>
               {t.consent}
-              <a
-                href="/conditions"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles['conditions-link']}
-              >
-                {t.conditions}
-              </a>.
+              <a href="/conditions" target="_blank" rel="noopener noreferrer" className={styles['conditions-link']}>{t.conditions}</a>.
             </label>
           </div>
           <div className={styles['submit-group']}>
-            <button
-              type="submit"
-              className={styles['submit-btn']}
-              disabled={isSubmitting}
-            >
+            <button type="submit" className={styles['submit-btn']} disabled={isSubmitting}>
               {isSubmitting ? 'Processing...' : t.submit}
             </button>
           </div>
         </form>
       </div>
-      <div className={styles['footer-full']}>
-        <Footer />
-      </div>
+      <div className={styles['footer-full']}><Footer /></div>
     </div>
   );
 };
