@@ -28,3 +28,4 @@ backend/.env-dev
 .env1
 .env
 node_modules/
+venv/
