@@ -4,7 +4,7 @@ import PageWithChat from './pages/PageWithChat/PageWithChat';
 import Register from './pages/Register/Register';
 import Conditions from './pages/Conditions';
 import Politique from './pages/Politique';
-import FaceRecognition from './components/FaceRecognition';
+import FaceReco from './pages/FaceReco';
 
 export const LangContext = createContext<{
   lang: 'fr' | 'en';
@@ -28,7 +28,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/conditions" element={<Conditions />} />
         <Route path="/politique" element={<Politique />} />
-        <Route path="/facerecognition" element={<FaceRecognition />} />
+        <Route path="/facerecognition" element={<FaceReco />} />
       </Routes>
     </LangContext.Provider>
   );
