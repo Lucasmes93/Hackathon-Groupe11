@@ -52,7 +52,9 @@ const Register: React.FC = () => {
     email: '',
     photo: ''
   });
-  const [consent, setConsent] = useState<boolean>(false);
+  const [consent, setConsent] = useState(false);
+  const [webcamKey, setWebcamKey] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const webcamRef = useRef<Webcam>(null);
   const navigate = useNavigate();
@@ -63,12 +65,47 @@ const Register: React.FC = () => {
   };
 
   const capturePhoto = () => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (imageSrc) {
-        setFormData(prev => ({ ...prev, photo: imageSrc }));
-      }
+    setError(null);
+    const screenshot = webcamRef.current?.getScreenshot();
+    if (screenshot) {
+      setFormData(prev => ({ ...prev, photo: screenshot }));
+    } else {
+      setError(lang === 'fr'
+        ? "Impossible de capturer l'image. Vérifiez que la webcam est active."
+        : "Unable to capture image. Please check that the webcam is active.");
     }
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({ ...prev, photo: event.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({ ...prev, photo: event.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const removePhoto = () => {
+    setFormData(prev => ({ ...prev, photo: '' }));
+    setWebcamKey(prev => prev + 1); // recharge webcam
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -84,82 +121,82 @@ const Register: React.FC = () => {
 
   return (
     <div className={styles['register-outer']}>
-      <div className={styles['header-full']}>
-        <Header />
-      </div>
+      <div className={styles['header-full']}><Header /></div>
       <div className={styles['register-container']}>
         <h2 className={styles['register-title']}>{t.title}</h2>
         <form onSubmit={handleSubmit} className={styles['register-form']}>
-          <div className={styles['form-group']}>
-            <label>{t.lastName} <span className={styles.required}>*</span>:</label>
-            <input
-              type="text"
-              name="nom"
-              value={formData.nom}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
-          </div>
-          <div className={styles['form-group']}>
-            <label>{t.firstName} <span className={styles.required}>*</span>:</label>
-            <input
-              type="text"
-              name="prenom"
-              value={formData.prenom}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
-          </div>
-          <div className={styles['form-group']}>
-            <label>{t.birthDate} <span className={styles.required}>*</span>:</label>
-            <input
-              type="date"
-              name="dateNaissance"
-              value={formData.dateNaissance}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
-          </div>
-          <div className={styles['form-group']}>
-            <label>{t.email} <span className={styles.required}>*</span>:</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className={styles['input']}
-            />
-          </div>
-          <div className={styles['form-group']}>
-            <label>{t.takePhoto}:</label>
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              width={300}
-              height={200}
-              videoConstraints={{ facingMode: 'user' }}
-              className={styles['webcam']}
-            />
-            <button 
-              type="button" 
-              onClick={capturePhoto} 
-              className={styles['capture-btn']}
-              disabled={!webcamRef.current}
-            >
-              {t.capture}
-            </button>
-          </div>
-          {formData.photo && (
-            <div className={styles['photo-preview']}>
-              <p>{t.preview}:</p>
-              <img src={formData.photo} alt="Capture" width={300} />
+
+          {/* Champs texte */}
+          {['nom', 'prenom', 'dateNaissance', 'email'].map(field => (
+            <div className={styles['form-group']} key={field}>
+              <label>
+                {t[field as keyof typeof t]} <span className={styles.required}>*</span>:
+              </label>
+              <input
+                type={field === 'dateNaissance' ? 'date' : field === 'email' ? 'email' : 'text'}
+                name={field}
+                value={(formData as any)[field]}
+                onChange={handleChange}
+                required
+                className={styles.input}
+              />
             </div>
-          )}
+          ))}
+
+          {/* Zone webcam/photo */}
+          <div className={styles['form-group']}>
+            {formData.photo ? (
+              <div className={styles['photo-preview']}>
+                <p>{t.preview}:</p>
+                <img src={formData.photo} alt="Preview" width={220} />
+                <button type="button" onClick={removePhoto} className={styles['remove-photo-btn']}>
+                  {lang === 'fr' ? 'Supprimer la photo' : 'Remove photo'}
+                </button>
+              </div>
+            ) : (
+              <>
+                <Webcam
+                  key={webcamKey}
+                  audio={false}
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  className={styles['webcam']}
+                />
+                <button
+                  type="button"
+                  onClick={capturePhoto}
+                  className={styles['capture-btn']}
+                >
+                  {t.capture}
+                </button>
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+
+                <div
+                  className={styles['drop-area']}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                >
+                  <p>
+                    {lang === 'fr'
+                      ? 'Glissez-déposez une photo ici ou sélectionnez un fichier'
+                      : 'Drag & drop a photo or select a file'}
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    id="upload"
+                    hidden
+                  />
+                  <label htmlFor="upload">
+                    {lang === 'fr' ? 'Sélectionner une photo' : 'Select a photo'}
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Consentement */}
           <div className={styles['consent-group']}>
             <input
               type="checkbox"
@@ -167,20 +204,16 @@ const Register: React.FC = () => {
               checked={consent}
               onChange={e => setConsent(e.target.checked)}
               required
-              className={styles['consent-checkbox']}
             />
-            <label htmlFor="consent" className={styles['consent-label']}>
+            <label htmlFor="consent">
               {t.consent}
-              <a 
-                href="/conditions" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className={styles['conditions-link']}
-              >
+              <a href="/conditions" target="_blank" rel="noopener noreferrer">
                 {t.conditions}
               </a>.
             </label>
           </div>
+
+          {/* Bouton submit */}
           <div className={styles['submit-group']}>
             <button type="submit" className={styles['submit-btn']}>
               {t.submit}
@@ -188,9 +221,7 @@ const Register: React.FC = () => {
           </div>
         </form>
       </div>
-      <div className={styles['footer-full']}>
-        <Footer />
-      </div>
+      <div className={styles['footer-full']}><Footer /></div>
     </div>
   );
 };
