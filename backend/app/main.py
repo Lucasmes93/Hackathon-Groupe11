@@ -8,6 +8,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from typing import List
 import os
 import time
 from . import models, schemas, crud
@@ -42,6 +43,9 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
+def get_base_url(request: Request) -> str:
+    return f"{request.url.scheme}://{request.url.netloc}"
+
 
 def get_db():
     db = SessionLocal()
@@ -72,3 +76,16 @@ async def upload_image(image: UploadFile = File(...)):
         buffer.write(await image.read())
     
     return {"filePath": f"/known/{filename}"}
+
+@app.get("/pictures", response_model=List[str])
+async def get_uploaded_files(request: Request):
+    try:
+        base_url = get_base_url(request)
+        files = os.listdir("public/known")
+        return [
+            f"{base_url}/known/{file}" 
+            for file in files 
+            if os.path.isfile(os.path.join("public/known", file))
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
