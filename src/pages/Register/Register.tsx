@@ -113,25 +113,31 @@ const Register: React.FC = () => {
     setWebcamKey(prev => prev + 1);
   };
 
-  const uploadPhotoToServer = async (photoData: string) => {
-    try {
-      const blob = await fetch(photoData).then(res => res.blob());
-      const formData = new FormData();
-      formData.append('image', blob, `student_${Date.now()}.jpg`);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-      const result = await response.json();
-      return result.filePath;
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      throw error;
+  const uploadPhotoToServer = async (photoData: string, nom: string, prenom: string) => {
+  try {
+    const blob = await fetch(photoData).then(res => res.blob());
+    const formData = new FormData();
+    formData.append('name', nom);
+    formData.append('surname', prenom);
+    formData.append('image', blob, `student_${Date.now()}.jpg`);
+
+    const response = await fetch("http://127.0.0.1:8000/upload", {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image');
     }
-  };
+
+    const result = await response.json();
+    return result.filePath;
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+    throw error;
+  }
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,8 +150,9 @@ const Register: React.FC = () => {
     try {
       let photoUrl = '';
       if (formData.photo) {
-        photoUrl = await uploadPhotoToServer(formData.photo);
+        photoUrl = await uploadPhotoToServer(formData.photo, formData.nom, formData.prenom);
       }
+
       const requestBody = {
         Nom: formData.nom,
         Prenom: formData.prenom,
