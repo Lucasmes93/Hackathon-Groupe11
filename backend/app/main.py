@@ -8,19 +8,33 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from fastapi_mcp import FastApiMCP
 from typing import List
 import os
 import time
 from . import models, schemas, crud
 from .database import SessionLocal, engine
+from .logging import setup_logging
+
+
+setup_logging()
 
 models.Base.metadata.create_all(bind=engine)
 
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
+mcp = FastApiMCP(
+    app,
+    name="My MCP API Server",
+    description="Very cool MCP server",
+    describe_all_responses=True,
+    describe_full_response_schema=True
+)
+
 os.makedirs("public/known", exist_ok=True)
 app.mount("/known", StaticFiles(directory="public/known"), name="known")
+mcp.mount()
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -88,3 +102,5 @@ async def get_uploaded_files(request: Request):
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+mcp.setup_server()
