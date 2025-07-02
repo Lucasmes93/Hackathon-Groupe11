@@ -1,5 +1,5 @@
 services:
-  backend:
+  hacksquad:
     build: .
     container_name: hacksquad-container
     env_file:
