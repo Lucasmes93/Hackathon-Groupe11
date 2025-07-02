@@ -4,10 +4,11 @@ import Footer from '../../components/Footer';
 import Webcam from 'react-webcam';
 import styles from './Register.module.scss';
 import { LangContext } from '../../App';
+import type { userFormProps } from '../../types/custom-type';
 
 const translations = {
   fr: {
-    title: 'Inscription Étudiant',
+    title: 'Pré-inscription Étudiant',
     lastName: 'Nom',
     firstName: 'Prénom',
     birthDate: 'Date de naissance',
@@ -40,25 +41,17 @@ const translations = {
   }
 };
 
-interface FormData {
-  nom: string;
-  prenom: string;
-  dateNaissance: string;
-  email: string;
-  photo: string;
-}
-
 const Register: React.FC = () => {
   const { lang } = useContext(LangContext);
   const t = translations[lang];
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<userFormProps>({
     nom: '',
     prenom: '',
     dateNaissance: '',
     email: '',
     photo: ''
   });
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState<boolean>(false);
 
   const webcamRef = useRef<Webcam>(null);
 
@@ -82,7 +75,7 @@ const Register: React.FC = () => {
       alert(t.alertConsent);
       return;
     }
-    console.log('Données envoyées :', formData);
+    console.log('Submitted data:', formData);
     alert(t.alertSuccess);
   };
 
@@ -95,7 +88,7 @@ const Register: React.FC = () => {
         <h2 className={styles['register-title']}>{t.title}</h2>
         <form onSubmit={handleSubmit} className={styles['register-form']}>
           <div className={styles['form-group']}>
-            <label>{t.lastName} :</label>
+            <label>{t.lastName} <span className={styles.required}>*</span>:</label>
             <input
               type="text"
               name="nom"
@@ -106,7 +99,7 @@ const Register: React.FC = () => {
             />
           </div>
           <div className={styles['form-group']}>
-            <label>{t.firstName} :</label>
+            <label>{t.firstName} <span className={styles.required}>*</span>:</label>
             <input
               type="text"
               name="prenom"
@@ -117,7 +110,7 @@ const Register: React.FC = () => {
             />
           </div>
           <div className={styles['form-group']}>
-            <label>{t.birthDate} :</label>
+            <label>{t.birthDate} <span className={styles.required}>*</span>:</label>
             <input
               type="date"
               name="dateNaissance"
@@ -128,7 +121,7 @@ const Register: React.FC = () => {
             />
           </div>
           <div className={styles['form-group']}>
-            <label>{t.email} :</label>
+            <label>{t.email} <span className={styles.required}>*</span>:</label>
             <input
               type="email"
               name="email"
@@ -139,7 +132,7 @@ const Register: React.FC = () => {
             />
           </div>
           <div className={styles['form-group']}>
-            <label>{t.takePhoto} :</label>
+            <label>{t.takePhoto}:</label>
             <Webcam
               audio={false}
               ref={webcamRef}
@@ -149,31 +142,43 @@ const Register: React.FC = () => {
               videoConstraints={{ facingMode: 'user' }}
               className={styles['webcam']}
             />
-            <button type="button" onClick={capturePhoto} className={styles['capture-btn']}>
+            <button 
+              type="button" 
+              onClick={capturePhoto} 
+              className={styles['capture-btn']}
+              disabled={!webcamRef.current}
+            >
               {t.capture}
             </button>
           </div>
           {formData.photo && (
             <div className={styles['photo-preview']}>
-              <p>{t.preview} :</p>
+              <p>{t.preview}:</p>
               <img src={formData.photo} alt="Capture" width={300} />
             </div>
           )}
-          <div className={styles['form-group']} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className={styles['consent-group']}>
             <input
               type="checkbox"
               id="consent"
               checked={consent}
               onChange={e => setConsent(e.target.checked)}
               required
-              style={{ width: '18px', height: '18px' }}
+              className={styles['consent-checkbox']}
             />
-            <label htmlFor="consent" style={{ cursor: 'pointer' }}>
+            <label htmlFor="consent" className={styles['consent-label']}>
               {t.consent}
-              <a href="/conditions" target="_blank" rel="noopener noreferrer" style={{ color: '#5e2fc0', textDecoration: 'underline', fontWeight: 'bold' }}>{t.conditions}</a>.
+              <a 
+                href="/conditions" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className={styles['conditions-link']}
+              >
+                {t.conditions}
+              </a>.
             </label>
           </div>
-          <div className={styles['form-group']}>
+          <div className={styles['submit-group']}>
             <button type="submit" className={styles['submit-btn']}>
               {t.submit}
             </button>
@@ -187,4 +192,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register; 
+export default Register;
