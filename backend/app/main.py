@@ -24,6 +24,13 @@ models.Base.metadata.create_all(bind=engine)
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
+
+include_operations_mcp = FastApiMCP(
+    app,
+    name="Included Operations",
+    include_operations=["estiam_data"],
+)
+
 mcp = FastApiMCP(
     app,
     name="My MCP API Server",
@@ -68,7 +75,7 @@ def get_db():
     finally:
         db.close()
 
-@app.post("/students/", response_model=schemas.PatientBase)
+@app.post("/students/", response_model=schemas.PatientBase, operation_id="create_student")
 @limiter.limit("5/minute")
 def create_student(request: Request, student: schemas.PatientBase, db: Session = Depends(get_db)):
     if crud.get_student_by_email(db, student.Email):
@@ -76,11 +83,11 @@ def create_student(request: Request, student: schemas.PatientBase, db: Session =
     return crud.create_student(db, student)
 
 
-@app.get("/students/", response_model=list[schemas.PatientBase])
+@app.get("/students/", response_model=list[schemas.PatientBase], operation_id="retrieve_student")
 def read_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     return crud.get_students(db, skip=skip, limit=limit)
 
-@app.post("/upload")
+@app.post("/upload", operation_id="upload_picture")
 async def upload_image(image: UploadFile = File(...)):
     os.makedirs("public/known", exist_ok=True)
     filename = f"student_{int(time.time())}.jpg"
@@ -90,7 +97,7 @@ async def upload_image(image: UploadFile = File(...)):
     
     return {"filePath": f"/known/{filename}"}
 
-@app.get("/pictures", response_model=List[str])
+@app.get("/pictures", response_model=List[str], operation_id="retrieve_picture")
 async def get_uploaded_files(request: Request):
     try:
         base_url = get_base_url(request)
@@ -102,5 +109,11 @@ async def get_uploaded_files(request: Request):
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/data", operation_id="estiam_data")
+async def get_context_data(request:Request):
+    return {"data": None}
 
+
+include_operations_mcp.mount(mount_path="/include-operations-mcp")
 mcp.setup_server()
