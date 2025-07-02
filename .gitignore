@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+backend/fast_env/
+backend/credentials.json
+backend/.env-dev
