@@ -5,6 +5,7 @@ import Webcam from 'react-webcam';
 import styles from './Register.module.scss';
 import { LangContext } from '../../App';
 import type { userFormProps } from '../../types/custom-type';
+import { useNavigate } from "react-router-dom";
 
 const translations = {
   fr: {
@@ -54,6 +55,7 @@ const Register: React.FC = () => {
   const [consent, setConsent] = useState<boolean>(false);
 
   const webcamRef = useRef<Webcam>(null);
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -77,6 +79,7 @@ const Register: React.FC = () => {
     }
     console.log('Submitted data:', formData);
     alert(t.alertSuccess);
+    navigate("/facerecognition");
   };
 
   return (
