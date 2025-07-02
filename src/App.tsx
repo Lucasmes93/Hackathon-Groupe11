@@ -28,7 +28,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/conditions" element={<Conditions />} />
         <Route path="/politique" element={<Politique />} />
-        <Route path="/face" element={<FaceRecognition />} />
+        <Route path="/facerecognition" element={<FaceRecognition />} />
       </Routes>
     </LangContext.Provider>
   );

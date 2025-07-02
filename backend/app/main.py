@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
@@ -15,6 +15,7 @@ import time
 from . import models, schemas, crud
 from .database import SessionLocal, engine
 from .logging import setup_logging
+from google.cloud import storage
 
 
 setup_logging()
@@ -88,9 +89,13 @@ def read_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db))
     return crud.get_students(db, skip=skip, limit=limit)
 
 @app.post("/upload", operation_id="upload_picture")
-async def upload_image(image: UploadFile = File(...)):
+async def upload_image(
+    name: str = Form(...),
+    surname: str = Form(...),
+    image: UploadFile = File(...)
+):
     os.makedirs("public/known", exist_ok=True)
-    filename = f"student_{int(time.time())}.jpg"
+    filename = f"{name}_{surname}_{int(time.time())}.jpg"
     file_path = f"public/known/{filename}"
     with open(file_path, "wb") as buffer:
         buffer.write(await image.read())
@@ -111,8 +116,33 @@ async def get_uploaded_files(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.get("/data", operation_id="estiam_data")
-async def get_context_data(request:Request):
-    return {"data": None}
+async def get_context_data(request: Request):
+    try:
+        storage_client = storage.Client()
+        bucket_name = "estiam_data_doc"
+        list_files = [
+            "Infos/Formations_ESTIAM.txt",
+            "Infos/Liste_des_campus_ESTIAM.txt",
+            "Infos/Presentation_ESTIAM.txt",
+            "Infos/faq_estiam.txt"
+        ]
+        
+        bucket = storage_client.bucket(bucket_name)
+        combined_content = ""
+        
+        for file_path in list_files:
+            try:
+                blob = bucket.blob(file_path)
+                combined_content += blob.download_as_text() + "\n\n"
+            except Exception:
+                continue 
+        return JSONResponse(content={"data": combined_content.strip()})
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve data: {str(e)}"
+        )
 
 
 include_operations_mcp.mount(mount_path="/include-operations-mcp")
