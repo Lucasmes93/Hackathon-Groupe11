@@ -88,9 +88,13 @@ def read_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db))
     return crud.get_students(db, skip=skip, limit=limit)
 
 @app.post("/upload", operation_id="upload_picture")
-async def upload_image(image: UploadFile = File(...)):
+async def upload_image(
+    name: str,
+    surname: str,
+    image: UploadFile = File(...)
+):
     os.makedirs("public/known", exist_ok=True)
-    filename = f"student_{int(time.time())}.jpg"
+    filename = f"{name}_{surname}_{int(time.time())}.jpg"
     file_path = f"public/known/{filename}"
     with open(file_path, "wb") as buffer:
         buffer.write(await image.read())
