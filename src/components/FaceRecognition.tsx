@@ -1,169 +1,199 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
 import Webcam from "react-webcam";
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 
-const FaceRecognition: React.FC = () => {
-    const webcamRef = useRef<Webcam>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [modelsLoaded, setModelsLoaded] = useState<boolean>(false);
-    const [faceMatcher, setFaceMatcher] = useState<faceapi.FaceMatcher | null>(null);
+const FaceRecognition = () => {
+  const webcamRef = useRef();
+  const canvasRef = useRef();
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [faceMatcher, setFaceMatcher] = useState(null);
+  const [lastRecognized, setLastRecognized] = useState(null);
 
-    useEffect(() => {
-        const loadModels = async () => {
-            const MODEL_URL = import.meta.env.BASE_URL + "models";
-            try {
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                ]);
-                setModelsLoaded(true);
-                console.log("✅ Models loaded!");
-            } catch (error) {
-                console.error("❌ Error loading models:", error);
-            }
-        };
-        loadModels();
-    }, []);
+  // Chargement des modèles
+  useEffect(() => {
+    const loadModels = async () => {
+      const MODEL_URL = process.env.PUBLIC_URL + "/models";
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        ]);
+        setModelsLoaded(true);
+        console.log("✅ Modèles chargés !");
+      } catch (error) {
+        console.error("❌ Erreur chargement des modèles :", error);
+      }
+    };
+    loadModels();
+  }, []);
 
-    useEffect(() => {
-        const loadKnownFaces = async () => {
-            const labels = ["Lucas", "Iles"];
-            const descriptions: faceapi.LabeledFaceDescriptors[] = [];
+  // Chargement des visages connus
+  useEffect(() => {
+    const loadKnownFaces = async () => {
+      const labels = ["Lucas", "Iles"];
+      const descriptions = [];
 
-            for (const label of labels) {
-                try {
-                    const imageUrl = `${import.meta.env.BASE_URL}known/${label}.jpg`;
-                    const img = await faceapi.fetchImage(imageUrl);
+      for (const label of labels) {
+        try {
+          const imageUrl = `${process.env.PUBLIC_URL}/known/${label}.jpg`;
+          const img = await faceapi.fetchImage(imageUrl);
 
-                    const detection = await faceapi
-                        .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-                        .withFaceLandmarks()
-                        .withFaceDescriptor();
+          const detection = await faceapi
+            .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
 
-                    if (!detection) {
-                        console.warn(`No face detected for ${label}`);
-                        continue;
-                    }
+          if (!detection) {
+            console.warn(`Aucun visage détecté pour ${label}`);
+            continue;
+          }
 
-                    descriptions.push(
-                        new faceapi.LabeledFaceDescriptors(label, [detection.descriptor])
-                    );
-                } catch (error) {
-                    console.error(`Error loading face for ${label}:`, error);
-                }
-            }
+          descriptions.push(
+            new faceapi.LabeledFaceDescriptors(label, [detection.descriptor])
+          );
+        } catch (error) {
+          console.error(`Erreur pour ${label} :`, error);
+        }
+      }
 
-            if (descriptions.length > 0) {
-                const matcher = new faceapi.FaceMatcher(descriptions, 0.6);
-                setFaceMatcher(matcher);
-                console.log("✅ Known faces loaded");
-            } else {
-                console.warn("No known faces loaded");
-            }
-        };
+      if (descriptions.length > 0) {
+        const matcher = new faceapi.FaceMatcher(descriptions, 0.6);
+        setFaceMatcher(matcher);
+        console.log("✅ Visages connus chargés");
+      } else {
+        console.warn("⚠️ Aucun visage connu chargé.");
+      }
+    };
 
-        if (modelsLoaded) loadKnownFaces();
-    }, [modelsLoaded]);
+    if (modelsLoaded) loadKnownFaces();
+  }, [modelsLoaded]);
 
-    // Live detection
-    useEffect(() => {
-        if (!modelsLoaded || !faceMatcher) return;
+  // Détection en live
+  useEffect(() => {
+    if (!modelsLoaded || !faceMatcher) return;
 
-        const interval = setInterval(async () => {
-            if (!webcamRef.current || !canvasRef.current) return;
+    const interval = setInterval(async () => {
+      const video = webcamRef.current?.video;
+      if (!video || video.readyState !== 4) return;
 
-            const video = webcamRef.current.video;
-            if (!video || video.readyState !== 4) return;
+      const detections = await faceapi
+        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptors();
 
-            const detections = await faceapi
-                .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-                .withFaceLandmarks()
-                .withFaceDescriptors();
+      const canvas = canvasRef.current;
+      faceapi.matchDimensions(canvas, {
+        width: video.videoWidth,
+        height: video.videoHeight,
+      });
 
-            const canvas = canvasRef.current;
-            faceapi.matchDimensions(canvas, {
-                width: video.videoWidth,
-                height: video.videoHeight,
-            });
+      const resized = faceapi.resizeResults(detections, {
+        width: video.videoWidth,
+        height: video.videoHeight,
+      });
 
-            const resized = faceapi.resizeResults(detections, {
-                width: video.videoWidth,
-                height: video.videoHeight,
-            });
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const ctx = canvas.getContext("2d");
-            if (!ctx) return;
+      resized.forEach((detection) => {
+        const box = detection.detection.box;
+        const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+        const label = bestMatch.toString();
+        const synth = window.speechSynthesis;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ✅ Reconnue
+        if (!label.includes("unknown") && label !== lastRecognized) {
+          console.log(`✅ ${label} reconnu`);
+          synth.cancel();
+          synth.speak(
+            new SpeechSynthesisUtterance("Accès autorisé - Merci d’entrer")
+          );
+          setLastRecognized(label);
+        }
 
-            resized.forEach((detection) => {
-                const box = detection.detection.box;
-                const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-                const drawBox = new faceapi.draw.DrawBox(box, {
-                    label: bestMatch.toString(),
-                });
-                drawBox.draw(canvas);
-            });
-        }, 500);
+        // ❌ Inconnue
+        if (label.includes("unknown") && lastRecognized !== "unknown") {
+          console.warn("❌ Visage inconnu - Accès interdit");
+          synth.cancel();
+          synth.speak(
+            new SpeechSynthesisUtterance("Visage inconnu - Accès interdit")
+          );
+          setLastRecognized("unknown");
+        }
 
-        return () => clearInterval(interval);
-    }, [modelsLoaded, faceMatcher]);
+        // 🎯 Couleur cadre
+        const boxColor = label.includes("unknown") ? "red" : "green";
 
-    return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: '#f7f8fa'
-        }}>
-            <Header />
+        const drawBox = new faceapi.draw.DrawBox(box, {
+          label,
+          boxColor,
+          lineWidth: 3,
+        });
+        drawBox.draw(canvas);
+      });
+    }, 1000);
 
-            <main style={{
-                flex: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '2rem',
-                position: 'relative',
-                margin: '2rem 0'
-            }}>
-                <div style={{
-                    position: 'relative',
-                    width: '720px',
-                    height: '560px',
-                    border: '2px solid #5e2fc0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}>
-                    <Webcam
-                        ref={webcamRef}
-                        audio={false}
-                        style={{
-                            position: "absolute",
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '6px'
-                        }}
-                    />
-                    <canvas
-                        ref={canvasRef}
-                        style={{
-                            position: "absolute",
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: '6px'
-                        }}
-                    />
-                </div>
-            </main>
+    return () => clearInterval(interval);
+  }, [modelsLoaded, faceMatcher, lastRecognized]);
 
-            <Footer />
-        </div>
-    );
+  return (
+    <div className="app-container">
+      <h1 className="app-title">🎥 Système de Reconnaissance Faciale</h1>
+      <div className="camera-container">
+        <Webcam ref={webcamRef} audio={false} className="webcam" />
+        <canvas ref={canvasRef} className="canvas" />
+      </div>
+
+      {/* CSS intégré */}
+      <style>{`
+        .app-container {
+          text-align: center;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          padding: 30px;
+          background: linear-gradient(to right, #1c92d2, #f2fcfe);
+          min-height: 100vh;
+        }
+
+        .app-title {
+          margin-bottom: 30px;
+          font-size: 2rem;
+          color: #222;
+          font-weight: bold;
+        }
+
+        .camera-container {
+          position: relative;
+          margin: 0 auto;
+          width: 720px;
+          height: 560px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+          border-radius: 12px;
+          overflow: hidden;
+          background-color: #000;
+        }
+
+        .webcam {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 12px;
+        }
+
+        .canvas {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+      `}</style>
+    </div>
+  );
 };
 
 export default FaceRecognition;
