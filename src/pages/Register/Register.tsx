@@ -1,4 +1,6 @@
 import React, { useState, useRef, useContext } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import Webcam from 'react-webcam';
@@ -77,7 +79,7 @@ const Register: React.FC = () => {
       const blob = await fetch(photoData).then(res => res.blob());
       const formData = new FormData();
       formData.append('image', blob, `student_${Date.now()}.jpg`);
-      const response = await fetch('http://127.0.0.1:8000/upload', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -117,8 +119,7 @@ const Register: React.FC = () => {
         Date_de_naissance: formData.dateNaissance,
         Photo: photoUrl
       };
-
-      const response = await fetch('http://127.0.0.1:8000/students', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,9 +131,8 @@ const Register: React.FC = () => {
         throw new Error('Network response was not ok');
       }
 
-      const result = await response.json();
-      alert(t.alertSuccess);
-      console.log('Success:', result);
+      await response.json();
+      toast.success(t.alertSuccess);
       setFormData({
         nom: '',
         prenom: '',
@@ -144,7 +144,11 @@ const Register: React.FC = () => {
 
     } catch (error) {
       console.error('Error:', error);
-      alert(t.error);
+      toast.error(
+        typeof error === 'object' && error !== null && 'message' in error
+          ? (error as { message: string }).message
+          : t.error
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -152,6 +156,18 @@ const Register: React.FC = () => {
 
   return (
     <div className={styles['register-outer']}>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <div className={styles['header-full']}>
         <Header />
       </div>

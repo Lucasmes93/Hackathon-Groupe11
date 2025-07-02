@@ -62,7 +62,6 @@ def create_student(request: Request, student: schemas.PatientBase, db: Session =
     return crud.create_student(db, student)
 
 
-
 @app.get("/students/", response_model=list[schemas.PatientBase])
 def read_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     return crud.get_students(db, skip=skip, limit=limit)
