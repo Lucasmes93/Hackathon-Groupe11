@@ -35,4 +35,4 @@ def setup_logging():
     from logging.config import dictConfig
 
     logging_config = LoggingConfig()
-    dictConfig(logging_config.model_dump())
+    dictConfig(logging_config.dict())

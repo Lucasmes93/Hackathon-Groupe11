@@ -3,16 +3,16 @@ import * as faceapi from "face-api.js";
 import Webcam from "react-webcam";
 
 const FaceRecognition = () => {
-  const webcamRef = useRef();
-  const canvasRef = useRef();
+  const webcamRef = useRef<any>();
+  const canvasRef = useRef<any>();
   const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [faceMatcher, setFaceMatcher] = useState(null);
-  const [lastRecognized, setLastRecognized] = useState(null);
+  const [faceMatcher, setFaceMatcher] = useState<faceapi.FaceMatcher | null>(null);
+  const [lastRecognized, setLastRecognized] = useState<string | null>(null);
 
-  // Chargement des modèles
+  // Chargement des modèles face-api.js
   useEffect(() => {
     const loadModels = async () => {
-      const MODEL_URL = process.env.PUBLIC_URL + "/models";
+      const MODEL_URL = import.meta.env.BASE_URL + "models";
       try {
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -28,48 +28,45 @@ const FaceRecognition = () => {
     loadModels();
   }, []);
 
-  // Chargement des visages connus
+  // Chargement des visages connus depuis l'API FastAPI
   useEffect(() => {
     const loadKnownFaces = async () => {
-      const labels = ["Lucas", "Iles"];
-      const descriptions = [];
+      try {
+        const response = await fetch("http://localhost:8000/pictures");
+        const data = await response.json();
+        const descriptions: faceapi.LabeledFaceDescriptors[] = [];
 
-      for (const label of labels) {
-        try {
-          const imageUrl = `${process.env.PUBLIC_URL}/known/${label}.jpg`;
-          const img = await faceapi.fetchImage(imageUrl);
-
+        for (const item of data) {
+          const img = await faceapi.fetchImage(item.url);
           const detection = await faceapi
             .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
             .withFaceLandmarks()
             .withFaceDescriptor();
 
           if (!detection) {
-            console.warn(`Aucun visage détecté pour ${label}`);
+            console.warn(`Aucun visage détecté pour ${item.label}`);
             continue;
           }
 
-          descriptions.push(
-            new faceapi.LabeledFaceDescriptors(label, [detection.descriptor])
-          );
-        } catch (error) {
-          console.error(`Erreur pour ${label} :`, error);
+          descriptions.push(new faceapi.LabeledFaceDescriptors(item.label, [detection.descriptor]));
         }
-      }
 
-      if (descriptions.length > 0) {
-        const matcher = new faceapi.FaceMatcher(descriptions, 0.6);
-        setFaceMatcher(matcher);
-        console.log("✅ Visages connus chargés");
-      } else {
-        console.warn("⚠️ Aucun visage connu chargé.");
+        if (descriptions.length > 0) {
+          const matcher = new faceapi.FaceMatcher(descriptions, 0.6);
+          setFaceMatcher(matcher);
+          console.log("✅ Visages connus chargés");
+        } else {
+          console.warn("⚠️ Aucun visage connu chargé.");
+        }
+      } catch (error) {
+        console.error("Erreur pour le chargement des visages connus :", error);
       }
     };
 
     if (modelsLoaded) loadKnownFaces();
   }, [modelsLoaded]);
 
-  // Détection en live
+  // Détection en temps réel
   useEffect(() => {
     if (!modelsLoaded || !faceMatcher) return;
 
@@ -99,35 +96,26 @@ const FaceRecognition = () => {
       resized.forEach((detection) => {
         const box = detection.detection.box;
         const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-        const label = bestMatch.toString();
+        const label = bestMatch.label;
+        const labelWithDistance = bestMatch.toString();
         const synth = window.speechSynthesis;
 
-        // ✅ Reconnue
-        if (!label.includes("unknown") && label !== lastRecognized) {
-          console.log(`✅ ${label} reconnu`);
-          synth.cancel();
-          synth.speak(
-            new SpeechSynthesisUtterance("Accès autorisé - Merci d’entrer")
-          );
+        if (label !== lastRecognized) {
+          if (label !== "unknown") {
+            console.log(`✅ ${label} reconnu`);
+            synth.cancel();
+            synth.speak(new SpeechSynthesisUtterance("Accès autorisé - Merci d’entrer"));
+          } else {
+            console.warn("❌ Visage inconnu - Accès interdit");
+            synth.cancel();
+            synth.speak(new SpeechSynthesisUtterance("Visage inconnu - Accès interdit"));
+          }
           setLastRecognized(label);
         }
 
-        // ❌ Inconnue
-        if (label.includes("unknown") && lastRecognized !== "unknown") {
-          console.warn("❌ Visage inconnu - Accès interdit");
-          synth.cancel();
-          synth.speak(
-            new SpeechSynthesisUtterance("Visage inconnu - Accès interdit")
-          );
-          setLastRecognized("unknown");
-        }
-
-        // 🎯 Couleur cadre
-        const boxColor = label.includes("unknown") ? "red" : "green";
-
         const drawBox = new faceapi.draw.DrawBox(box, {
-          label,
-          boxColor,
+          label: labelWithDistance,
+          boxColor: label === "unknown" ? "red" : "green",
           lineWidth: 3,
         });
         drawBox.draw(canvas);
@@ -145,7 +133,6 @@ const FaceRecognition = () => {
         <canvas ref={canvasRef} className="canvas" />
       </div>
 
-      {/* CSS intégré */}
       <style>{`
         .app-container {
           text-align: center;
