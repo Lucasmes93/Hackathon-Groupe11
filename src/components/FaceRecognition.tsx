@@ -28,7 +28,7 @@ const FaceRecognition = () => {
     loadModels();
   }, []);
 
-  // Chargement des visages connus depuis l’API
+  // Chargement des visages connus depuis l'API
   useEffect(() => {
     const loadKnownFaces = async () => {
       try {
@@ -97,7 +97,7 @@ const FaceRecognition = () => {
           synth.cancel();
 
           if (label !== "unknown") {
-            synth.speak(new SpeechSynthesisUtterance("Accès autorisé - Merci d’entrer"));
+            synth.speak(new SpeechSynthesisUtterance("Accès autorisé - Merci d'entrer"));
           } else {
             synth.speak(new SpeechSynthesisUtterance("Visage inconnu - Accès interdit"));
           }
@@ -119,7 +119,7 @@ const FaceRecognition = () => {
 
   return (
     <div className="app-container">
-      <h1 className="app-title">🎥 Système de Reconnaissance Faciale</h1>
+      <h1 className="app-title">Système de Reconnaissance Faciale</h1>
       <div className="camera-container">
         <Webcam ref={webcamRef} audio={false} className="webcam" />
         <canvas ref={canvasRef} className="canvas" />
@@ -130,7 +130,7 @@ const FaceRecognition = () => {
           text-align: center;
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           padding: 30px;
-          background: linear-gradient(to right, #1c92d2, #f2fcfe);
+          background: linear-gradient(to right, #ff5500, #f2fcfe);
           min-height: 100vh;
         }
 
@@ -149,7 +149,7 @@ const FaceRecognition = () => {
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
           border-radius: 12px;
           overflow: hidden;
-          background-color: #000;
+          background: linear-gradient(135deg, #ff5500 0%, #fff6e6 100%);
         }
 
         .webcam {
