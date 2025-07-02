@@ -21,9 +21,13 @@ const Header: React.FC = () => {
   const { lang, setLang } = useContext(LangContext);
   const t = translations[lang];
   return (
-    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', background: '#5e2fc0', borderBottom: '2px solid #5e2fc0', boxShadow: '0 2px 8px rgba(94,47,192,0.05)' }}>
-      <img src={estiamLogo} alt="Logo Estiam" style={{ height: 90, width: 'auto', marginRight: 40 }} />
-      <nav style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+    <header style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', background: '#5e2fc0', borderBottom: '2px solid #5e2fc0', boxShadow: '0 2px 8px rgba(94,47,192,0.05)' }}>
+      <img src={estiamLogo} alt="Logo Estiam" style={{ height: 90, width: 'auto', marginRight: 40, zIndex: 2 }} />
+      <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fff', lineHeight: 1 }}>HackSquad</div>
+        <div style={{ fontSize: '1.1rem', color: '#fff', marginTop: 4 }}>Groupe 11</div>
+      </div>
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '1rem', zIndex: 2 }}>
         <button style={{ marginRight: '1rem', background: '#fff', color: '#5e2fc0', border: 'none', borderRadius: '5px', padding: '0.5rem 1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onClick={() => navigate('/')}>{t.home}</button>
         <button style={{ background: '#ff5500', color: '#fff', border: 'none', borderRadius: '5px', padding: '0.5rem 1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onClick={() => navigate('/register')}>{t.register}</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 16 }}>
