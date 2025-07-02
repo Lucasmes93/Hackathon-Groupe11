@@ -22,6 +22,7 @@ const translations = {
     alertConsent: "Vous devez accepter le traitement de vos données pour continuer.",
     alertSuccess: "Inscription réussie !",
     required: 'requis',
+    error: "Erreur lors de l'inscription",
   },
   en: {
     title: 'Student Registration',
@@ -38,6 +39,7 @@ const translations = {
     alertConsent: 'You must accept the processing of your data to continue.',
     alertSuccess: 'Registration successful!',
     required: 'required',
+    error: "Registration error",
   }
 };
 
@@ -52,6 +54,7 @@ const Register: React.FC = () => {
     photo: ''
   });
   const [consent, setConsent] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const webcamRef = useRef<Webcam>(null);
 
@@ -69,14 +72,82 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const uploadPhotoToServer = async (photoData: string) => {
+    try {
+      const blob = await fetch(photoData).then(res => res.blob());
+      const formData = new FormData();
+      formData.append('image', blob, `student_${Date.now()}.jpg`);
+      const response = await fetch('http://127.0.0.1:8000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const result = await response.json();
+      return result.filePath;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!consent) {
       alert(t.alertConsent);
       return;
     }
-    console.log('Submitted data:', formData);
-    alert(t.alertSuccess);
+
+    setIsSubmitting(true);
+
+    try {
+      let photoUrl = '';
+      if (formData.photo) {
+        photoUrl = await uploadPhotoToServer(formData.photo);
+      }
+
+      const requestBody = {
+        Nom: formData.nom,
+        Prenom: formData.prenom,
+        Email: formData.email,
+        Date_de_naissance: formData.dateNaissance,
+        Photo: photoUrl
+      };
+
+      const response = await fetch('http://127.0.0.1:8000/students', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.json();
+      alert(t.alertSuccess);
+      console.log('Success:', result);
+      setFormData({
+        nom: '',
+        prenom: '',
+        dateNaissance: '',
+        email: '',
+        photo: ''
+      });
+      setConsent(false);
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert(t.error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -142,9 +213,9 @@ const Register: React.FC = () => {
               videoConstraints={{ facingMode: 'user' }}
               className={styles['webcam']}
             />
-            <button 
-              type="button" 
-              onClick={capturePhoto} 
+            <button
+              type="button"
+              onClick={capturePhoto}
               className={styles['capture-btn']}
               disabled={!webcamRef.current}
             >
@@ -168,10 +239,10 @@ const Register: React.FC = () => {
             />
             <label htmlFor="consent" className={styles['consent-label']}>
               {t.consent}
-              <a 
-                href="/conditions" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="/conditions"
+                target="_blank"
+                rel="noopener noreferrer"
                 className={styles['conditions-link']}
               >
                 {t.conditions}
@@ -179,8 +250,12 @@ const Register: React.FC = () => {
             </label>
           </div>
           <div className={styles['submit-group']}>
-            <button type="submit" className={styles['submit-btn']}>
-              {t.submit}
+            <button
+              type="submit"
+              className={styles['submit-btn']}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Processing...' : t.submit}
             </button>
           </div>
         </form>

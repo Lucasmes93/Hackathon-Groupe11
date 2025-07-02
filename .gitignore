@@ -25,3 +25,4 @@ dist-ssr
 backend/fast_env/
 backend/credentials.json
 backend/.env-dev
+.env1

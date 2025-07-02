@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +8,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-
+import os
+import time
 from . import models, schemas, crud
 from .database import SessionLocal, engine
 
@@ -16,6 +18,9 @@ models.Base.metadata.create_all(bind=engine)
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
+os.makedirs("public/known", exist_ok=True)
+app.mount("/known", StaticFiles(directory="public/known"), name="known")
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -57,3 +62,13 @@ def create_student(request: Request, student: schemas.PatientBase, db: Session =
 @app.get("/students/", response_model=list[schemas.PatientBase])
 def read_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     return crud.get_students(db, skip=skip, limit=limit)
+
+@app.post("/upload")
+async def upload_image(image: UploadFile = File(...)):
+    os.makedirs("public/known", exist_ok=True)
+    filename = f"student_{int(time.time())}.jpg"
+    file_path = f"public/known/{filename}"
+    with open(file_path, "wb") as buffer:
+        buffer.write(await image.read())
+    
+    return {"filePath": f"/known/{filename}"}
