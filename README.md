@@ -95,9 +95,21 @@ npm run dev
 
 ## 👥 Équipe
 
-- Lucas Messia
-- Yvann De Souza
-- [Ajoutez les autres membres ici]
+- Lucas Messia-Doliveux
+- Iles Yazi
+- Yvann De-Souza
+- Yanis Mekkaoui
+- Thibault Druelle
+- Sidy Diallo
+- Reda Bouhired
+- Quentin Gautier
+- Philippe-Ivan Mbarga
+- Ousmane-Mamadou Djire
+- Maxime-Jules-Elliott Feltrin
+- Koboyo-Florent Atakora
+- Japhet Ntantu
+- Gabriel Molinier
+- Adam Amara
 
 ---
 
