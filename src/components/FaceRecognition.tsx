@@ -141,7 +141,6 @@ useEffect(() => {
 
   return (
     <div className="app-container">
-      <h1 className="app-title">Système de Reconnaissance Faciale</h1>
       <div className="camera-container">
         <Webcam ref={webcamRef} audio={false} className="webcam" />
         <canvas ref={canvasRef} className="canvas" />
@@ -152,7 +151,7 @@ useEffect(() => {
           text-align: center;
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           padding: 30px;
-          background: linear-gradient(to right, #ff5500, #f2fcfe);
+          background: linear-gradient(135deg, #5e2fc0 100%, #f6f4ff 0%);
           min-height: 100vh;
         }
 
@@ -171,8 +170,7 @@ useEffect(() => {
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
           border-radius: 12px;
           overflow: hidden;
-          background: linear-gradient(135deg, #ff5500 0%, #fff6e6 100%);
-        }
+          background: linear-gradient(135deg, #5e2fc0 0%, #f6f4ff 100%);        }
 
         .webcam {
           position: absolute;
