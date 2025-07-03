@@ -1,0 +1,124 @@
+{
+  "id": null,
+  "title": "MySQL & FastAPI Monitoring",
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "MySQL - Connexions Actives",
+      "targets": [
+        {
+          "expr": "mysql_global_status_threads_connected",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 3, "w": 6, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "MySQL - Uptime (secondes)",
+      "targets": [
+        {
+          "expr": "mysql_global_status_uptime",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 3, "w": 6, "x": 6, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "MySQL - Requêtes par seconde",
+      "targets": [
+        {
+          "expr": "rate(mysql_global_status_questions[5m])",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 3 }
+    },
+    {
+      "type": "stat",
+      "title": "MySQL - Requêtes lentes (cumul)",
+      "targets": [
+        {
+          "expr": "mysql_global_status_slow_queries",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 3, "w": 6, "x": 0, "y": 11 }
+    },
+    {
+      "type": "stat",
+      "title": "MySQL - Threads Running",
+      "targets": [
+        {
+          "expr": "mysql_global_status_threads_running",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 3, "w": 6, "x": 6, "y": 11 }
+    },
+    {
+      "type": "graph",
+      "title": "MySQL - Innodb Buffer Pool Utilisation (%)",
+      "targets": [
+        {
+          "expr": "(mysql_global_status_innodb_buffer_pool_bytes_data / mysql_global_status_innodb_buffer_pool_bytes_total) * 100",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 }
+    },
+    {
+      "type": "graph",
+      "title": "FastAPI - Requêtes par seconde",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total[1m])",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 }
+    },
+    {
+      "type": "graph",
+      "title": "FastAPI - Latence moyenne des requêtes (p50)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 30 }
+    },
+    {
+      "type": "graph",
+      "title": "FastAPI - Latence p95 des requêtes",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 38 }
+    },
+    {
+      "type": "stat",
+      "title": "FastAPI - Requêtes en cours",
+      "targets": [
+        {
+          "expr": "sum(http_requests_in_progress)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 3, "w": 6, "x": 0, "y": 46 }
+    }
+  ],
+  "schemaVersion": 30,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  }
+}

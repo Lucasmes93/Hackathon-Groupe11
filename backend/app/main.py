@@ -16,6 +16,9 @@ from . import models, schemas, crud
 from .database import SessionLocal, engine
 from .logging import setup_logging
 from google.cloud import storage
+from prometheus_client import make_asgi_app
+
+
 
 
 setup_logging()
@@ -31,6 +34,9 @@ include_operations_mcp = FastApiMCP(
     name="Included Operations",
     include_operations=["estiam_data"],
 )
+
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
 
 mcp = FastApiMCP(
     app,
