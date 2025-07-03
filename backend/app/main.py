@@ -119,7 +119,7 @@ async def post_message(request: MessageRequest):
             
             API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
             headers = {
-                "Authorization": f"Bearer {TOKEN}",
+                "Authorization": f"Bearer {os.getenv('HF_API_KEY')}",
                 "Content-Type": "application/json",
                 "Accept": "text/event-stream"
             }
