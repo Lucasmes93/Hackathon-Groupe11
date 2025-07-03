@@ -12,16 +12,34 @@ from fastapi_mcp import FastApiMCP
 from typing import List
 import os
 import time
+from fastapi.responses import StreamingResponse
+import json
 from . import models, schemas, crud
 from .database import SessionLocal, engine
 from .logging import setup_logging
 from google.cloud import storage
+from uuid import uuid4
+from datetime import datetime, timedelta
+from pydantic import BaseModel
+import logging
+import requests
+from dotenv import load_dotenv
+load_dotenv()
+# Configure logging
+sessions = {}
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class MessageRequest(BaseModel):
+    session_id: str
+    query: str
 from prometheus_client import make_asgi_app
 
 
 
 
 setup_logging()
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -35,9 +53,6 @@ include_operations_mcp = FastApiMCP(
     include_operations=["estiam_data"],
 )
 
-metrics_app = make_asgi_app()
-app.mount("/metrics", metrics_app)
-
 mcp = FastApiMCP(
     app,
     name="My MCP API Server",
@@ -48,7 +63,6 @@ mcp = FastApiMCP(
 
 os.makedirs("public/known", exist_ok=True)
 app.mount("/known", StaticFiles(directory="public/known"), name="known")
-mcp.mount()
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -82,6 +96,109 @@ def get_db():
     finally:
         db.close()
 
+
+@app.post("/mcp/sessions/", tags=["MCP"])
+async def create_session():
+    session_id = str(uuid4())
+    expires_at = datetime.now() + timedelta(hours=1)
+    sessions[session_id] = {
+        "created_at": datetime.now(),
+        "expires_at": expires_at,
+        "active": True
+    }
+    return {"session_id": session_id, "expires_at": expires_at}
+
+@app.post("/mcp/messages/", tags=["MCP"])
+async def post_message(request: MessageRequest):
+    if request.session_id not in sessions or not sessions[request.session_id]["active"]:
+        logger.warning(f"Invalid session attempt: {request.session_id}")
+        raise HTTPException(status_code=404, detail="Invalid session ID")
+    
+    async def generate_stream():
+        try:
+            data_response = await get_context_data(Request)
+            estiam_data = data_response.body.decode()
+            prompt = f"""
+            Vous êtes un assistant spécialisé sur l'école ESTIAM. 
+            Voici les informations disponibles:
+            {estiam_data}
+            
+            Question: {request.query}
+            
+            Instructions:
+            1. Répondez exclusivement en vous basant sur ces informations
+            2. Si la question n'est pas pertinente pour ESTIAM, expliquez que vous ne traitez que les questions sur ESTIAM
+            3. Si l'information n'est pas disponible, proposez de contacter l'administration
+            4. Répondez en français
+            5. Soyez concis et précis
+            """
+            
+            API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {os.getenv('HF_API_KEY')}",
+                "Content-Type": "application/json",
+                "Accept": "text/event-stream"
+            }
+            
+            payload = {
+                "messages": [{"role": "user", "content": prompt}],
+                "model": "meta-llama/llama-3.2-3b-instruct",
+                "max_tokens": 512,
+                "temperature": 0.1,
+                "stream": True
+            }
+            
+            with requests.post(
+                API_URL,
+                headers=headers,
+                json=payload,
+                stream=True,
+                timeout=30
+            ) as response:
+                response.raise_for_status()
+                
+                full_response = ""
+                for line in response.iter_lines():
+                    if line:
+                        decoded_line = line.decode('utf-8')
+                        if decoded_line.startswith('data:'):
+                            try:
+                                event_data = json.loads(decoded_line[5:])
+                                if 'choices' in event_data and len(event_data['choices']) > 0:
+                                    chunk = event_data['choices'][0].get('delta', {}).get('content', '')
+                                    if chunk:
+                                        full_response += chunk
+                                        yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+                            except json.JSONDecodeError:
+                                continue
+                
+                fallback_phrases = [
+                    "je ne trouve pas",
+                    "information non disponible",
+                    "contactez l'administration",
+                    "pas dans les documents"
+                ]
+                
+                if any(phrase in full_response.lower() for phrase in fallback_phrases):
+                    full_response += "\n\nPour plus d'informations, veuillez contacter l'administration ESTIAM."
+                
+                final_data = {
+                    'full_response': full_response,
+                    'session_id': request.session_id,
+                    'status': 'success',
+                    'source': 'estiam_data',
+                    'done': True
+                }
+                yield f"data: {json.dumps(final_data)}\n\n"
+        
+        except Exception as e:
+            logger.error(f"Error in streaming: {str(e)}", exc_info=True)
+            error_message = "Une erreur est survenue. Veuillez contacter l'administration ESTIAM pour assistance."
+            yield f"data: {json.dumps({'error': error_message, 'done': True})}\n\n"
+    
+    return StreamingResponse(generate_stream(), media_type="text/event-stream")
+ 
+
 @app.post("/students/", response_model=schemas.PatientBase, operation_id="create_student")
 @limiter.limit("5/minute")
 def create_student(request: Request, student: schemas.PatientBase, db: Session = Depends(get_db)):
@@ -105,7 +222,6 @@ async def upload_image(
     file_path = f"public/known/{filename}"
     with open(file_path, "wb") as buffer:
         buffer.write(await image.read())
-    
     return {"filePath": f"/known/{filename}"}
 
 @app.get("/pictures", response_model=List[str], operation_id="retrieve_picture")
@@ -130,7 +246,8 @@ async def get_context_data(request: Request):
             "Infos/Formations_ESTIAM.txt",
             "Infos/Liste_des_campus_ESTIAM.txt",
             "Infos/Presentation_ESTIAM.txt",
-            "Infos/faq_estiam.txt"
+            "Infos/faq_estiam.txt",
+            "Infos/Infos_pratiques.txt"
         ]
         
         bucket = storage_client.bucket(bucket_name)
@@ -150,6 +267,10 @@ async def get_context_data(request: Request):
             detail=f"Failed to retrieve data: {str(e)}"
         )
 
+mcp = FastApiMCP(
+    app,
+    name="Estiam data- Included Operations",
+    include_operations=["estiam_data"],
+)
 
-include_operations_mcp.mount(mount_path="/include-operations-mcp")
-mcp.setup_server()
+mcp.mount(mount_path="/mcp")

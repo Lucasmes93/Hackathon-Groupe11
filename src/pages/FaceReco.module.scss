@@ -1,0 +1,14 @@
+.facereco-outer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #5e2fc0 0%, #f6f4ff 100%);
+}
+
+.facereco-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0 2rem 0;
+} 

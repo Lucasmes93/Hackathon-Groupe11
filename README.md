@@ -1,69 +1,133 @@
-# React + TypeScript + Vite
+# 🚀 Hackathon-Groupe11
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bienvenue sur le dépôt du projet **Hackathon-Groupe11** !  
+Ce projet a été réalisé dans le cadre d’un hackathon et combine une application web moderne avec une API backend robuste.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🗂️ Structure du projet
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+Hackathon-Groupe11/
+│
+├── backend/         # API Python (FastAPI)
+│   ├── app/         # Code source backend
+│   ├── public/      # Images connues pour la reconnaissance faciale
+│   ├── Dockerfile   # Conteneurisation backend
+│   └── requirements.txt
+│
+├── src/             # Frontend React + TypeScript
+│   ├── components/  # Composants réutilisables
+│   ├── pages/       # Pages principales
+│   └── assets/      # Images et ressources
+│
+├── public/          # Modèles de reconnaissance faciale
+├── docs/            # Documentation, rapports, chartes
+├── package.json     # Dépendances frontend
+└── README.md        # Ce fichier
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ✨ Fonctionnalités principales
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- 🔒 Authentification sécurisée
+- 🧑‍💻 Reconnaissance faciale (Face Recognition)
+- 💬 Chat intégré
+- 📄 Pages légales : Politique de confidentialité, Conditions d’utilisation
+- 🐳 Conteneurisation Docker pour le backend
+- 📊 Documentation et rapports de sécurité inclus
+
+---
+
+## ⚙️ Installation & Lancement
+
+### 1. Cloner le dépôt
+
+```bash
+git clone https://github.com/votre-utilisateur/Hackathon-Groupe11.git
+cd Hackathon-Groupe11
 ```
+
+### 2. Lancer le backend (FastAPI)
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # ou .\venv\Scripts\activate sous Windows
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Ou via Docker :
+
+```bash
+docker build -t hackathon-backend .
+docker run -p 8000:8000 hackathon-backend
+```
+
+### 3. Lancer le frontend (React)
+
+```bash
+npm install
+npm run dev
+```
+
+---
+
+## 🖼️ Aperçu
+
+- Page d’accueil moderne avec logo Estiam
+- Interface de chat conviviale
+- Module de reconnaissance faciale en temps réel
+
+---
+
+## 📁 Documentation
+
+- [Charte de confidentialité](docs/Charte_de_confidentialite_HackSquad%201.pdf)
+- [Politique de confidentialité](docs/Politique_de_confidentialite_HackSquad%201.pdf)
+- [Rapport d’audit sécurité](docs/Rapport_Audit_Securite.pdf)
+- [Stratégie de gouvernance](docs/Strategie_Gouvernance.pdf)
+- [Rapport de pentest](docs/rapport_pentest_mcp.md)
+
+---
+
+## 👥 Équipe
+
+- Lucas Messia-Doliveux
+- Iles Yazi
+- Yvann De-Souza
+- Yanis Mekkaoui
+- Thibault Druelle
+- Sidy Diallo
+- Reda Bouhired
+- Quentin Gautier
+- Philippe-Ivan Mbarga
+- Ousmane-Mamadou Djire
+- Maxime-Jules-Elliott Feltrin
+- Koboyo-Florent Atakora
+- Japhet Ntantu
+- Gabriel Molinier
+- Adam Amara
+
+---
+
+## 🛡️ Sécurité
+
+- Audit de sécurité réalisé (voir docs/)
+- Pentest inclus (voir docs/pentest_mcp.sh)
+
+---
+
+## 📜 Licence
+
+Ce projet est sous licence [MIT](LICENSE) (à adapter selon votre cas).
+
+---
+
+## 🙏 Remerciements
+
+Merci à tous les membres de l’équipe, aux encadrants et à l’école Estiam pour leur soutien lors de ce hackathon !
+
+---
