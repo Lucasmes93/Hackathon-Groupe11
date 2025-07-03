@@ -5,13 +5,51 @@ services:
     env_file:
       - .env
     ports:
-      - "8000:8080"
+      - "8000:8000"
     environment:
-      - PORT=8080
+      - PORT=8000
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
     volumes:
       - .:/app
       - ./credentials.json:/app/credentials.json
 
     command: >
-      gunicorn --bind :8080 --workers 1 --worker-class uvicorn.workers.UvicornWorker --threads 8 app.main:app
+      gunicorn --bind :8000 --workers 1 --worker-class uvicorn.workers.UvicornWorker --threads 8 app.main:app
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.listen-address=0.0.0.0:9091'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9091:9091"
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+       - "3002:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    depends_on:
+      - prometheus
+
+  mysqld-exporter:
+    image: quay.io/prometheus/mysqld-exporter
+    container_name: mysqld-exporter
+    ports:
+      - "9104:9104"
+    restart: unless-stopped
+    command:
+     - "--mysqld.username=${DB_USER}:${DB_PASSWORD}"
+     - "--mysqld.address=${IP_ADRESS}:3306"
+
+volumes:
+  grafana-data:

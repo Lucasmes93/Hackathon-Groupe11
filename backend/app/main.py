@@ -24,6 +24,9 @@ from pydantic import BaseModel
 import logging
 import requests
 from dotenv import load_dotenv
+from prometheus_client import make_asgi_app
+from prometheus_fastapi_instrumentator import Instrumentator
+
 load_dotenv()
 # Configure logging
 sessions = {}
@@ -35,6 +38,9 @@ class MessageRequest(BaseModel):
     query: str
 
 
+
+
+
 setup_logging()
 
 
@@ -43,18 +49,33 @@ models.Base.metadata.create_all(bind=engine)
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
+metrics_app = make_asgi_app()
+include_operations_mcp = FastApiMCP(
+    app,
+    name="Included Operations",
+    include_operations=["estiam_data"],
+)
 
-TOKEN = os.getenv("HUGGINFACE_TOKEN")
+mcp = FastApiMCP(
+    app,
+    name="My MCP API Server",
+    description="Very cool MCP server",
+    describe_all_responses=True,
+    describe_full_response_schema=True
+)
+
 
 os.makedirs("public/known", exist_ok=True)
 app.mount("/known", StaticFiles(directory="public/known"), name="known")
+app.mount("/metrics", metrics_app)
+Instrumentator().instrument(app).expose(app)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -185,8 +206,9 @@ async def post_message(request: MessageRequest):
  
 
 @app.post("/students/", response_model=schemas.PatientBase, operation_id="create_student")
-@limiter.limit("5/minute")
+# @limiter.limit("5/minute")
 def create_student(request: Request, student: schemas.PatientBase, db: Session = Depends(get_db)):
+    logger.info(f"Received student data: {student.dict()}")
     if crud.get_student_by_email(db, student.Email):
         raise HTTPException(status_code=400, detail="L'étudiant existe déjà")
     return crud.create_student(db, student)

@@ -5,6 +5,7 @@ import Register from './pages/Register/Register';
 import Conditions from './pages/Conditions';
 import Politique from './pages/Politique';
 import FaceReco from './pages/FaceReco';
+import AccessGranted from './components/AccessGranted';
 
 export const LangContext = createContext<{
   lang: 'fr' | 'en';
@@ -29,6 +30,7 @@ function App() {
         <Route path="/conditions" element={<Conditions />} />
         <Route path="/politique" element={<Politique />} />
         <Route path="/facerecognition" element={<FaceReco />} />
+        <Route path="/access-granted" element={<AccessGranted />} />
       </Routes>
     </LangContext.Provider>
   );
