@@ -23,7 +23,8 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel
 import logging
 import requests
-
+from dotenv import load_dotenv
+load_dotenv()
 # Configure logging
 sessions = {}
 logging.basicConfig(level=logging.INFO)
