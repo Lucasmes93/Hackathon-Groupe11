@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
 import Webcam from "react-webcam";
+import { useNavigate } from "react-router-dom";
  
 const FaceRecognition = () => {
   const webcamRef = useRef<any>();
@@ -8,6 +9,7 @@ const FaceRecognition = () => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [faceMatcher, setFaceMatcher] = useState<faceapi.FaceMatcher | null>(null);
   const [lastRecognized, setLastRecognized] = useState<string | null>(null);
+  const navigate = useNavigate();
  
   // Chargement des modèles
   useEffect(() => {
@@ -118,6 +120,7 @@ const FaceRecognition = () => {
           if (label !== "unknown") {
             console.log(`✅ ${label} reconnu`);
             synth.speak(new SpeechSynthesisUtterance("Accès autorisé - Merci d'entrer"));
+            navigate('/access-granted')
           } else {
             console.warn("❌ Visage inconnu - Accès interdit");
             synth.speak(new SpeechSynthesisUtterance("Visage inconnu - Accès interdit"));

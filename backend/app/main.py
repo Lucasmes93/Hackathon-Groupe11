@@ -24,6 +24,9 @@ from pydantic import BaseModel
 import logging
 import requests
 from dotenv import load_dotenv
+from prometheus_client import make_asgi_app
+from prometheus_fastapi_instrumentator import Instrumentator
+
 load_dotenv()
 # Configure logging
 sessions = {}
@@ -33,7 +36,7 @@ logger = logging.getLogger(__name__)
 class MessageRequest(BaseModel):
     session_id: str
     query: str
-from prometheus_client import make_asgi_app
+
 
 
 
@@ -46,7 +49,7 @@ models.Base.metadata.create_all(bind=engine)
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
-
+metrics_app = make_asgi_app()
 include_operations_mcp = FastApiMCP(
     app,
     name="Included Operations",
@@ -61,8 +64,11 @@ mcp = FastApiMCP(
     describe_full_response_schema=True
 )
 
+
 os.makedirs("public/known", exist_ok=True)
 app.mount("/known", StaticFiles(directory="public/known"), name="known")
+app.mount("/metrics", metrics_app)
+Instrumentator().instrument(app).expose(app)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
