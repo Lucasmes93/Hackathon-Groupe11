@@ -231,7 +231,8 @@ async def get_context_data(request: Request):
             "Infos/Formations_ESTIAM.txt",
             "Infos/Liste_des_campus_ESTIAM.txt",
             "Infos/Presentation_ESTIAM.txt",
-            "Infos/faq_estiam.txt"
+            "Infos/faq_estiam.txt",
+            "Infos/Infos_pratiques.txt"
         ]
         
         bucket = storage_client.bucket(bucket_name)
