@@ -43,6 +43,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
 
+TOKEN = os.getenv("HUGGINFACE_TOKEN")
 
 os.makedirs("public/known", exist_ok=True)
 app.mount("/known", StaticFiles(directory="public/known"), name="known")
@@ -99,11 +100,8 @@ async def post_message(request: MessageRequest):
     
     async def generate_stream():
         try:
-            # Always use ESTIAM context regardless of keywords
             data_response = await get_context_data(Request)
             estiam_data = data_response.body.decode()
-            
-            # Prepare prompt that forces ESTIAM context
             prompt = f"""
             Vous êtes un assistant spécialisé sur l'école ESTIAM. 
             Voici les informations disponibles:
@@ -121,7 +119,7 @@ async def post_message(request: MessageRequest):
             
             API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
             headers = {
-                "Authorization": "Bearer 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",
+                "Authorization": f"Bearer {TOKEN}",
                 "Content-Type": "application/json",
                 "Accept": "text/event-stream"
             }
