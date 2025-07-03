@@ -28,36 +28,56 @@ const FaceRecognition = () => {
     loadModels();
   }, []);
 
-  // Chargement des visages connus depuis l'API
-  useEffect(() => {
-    const loadKnownFaces = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/pictures");
-        const data = await response.json();
-        const descriptions: faceapi.LabeledFaceDescriptors[] = [];
+  // Chargement des visages connus
+  // Chargement des visages connus
+useEffect(() => {
+  const loadKnownFaces = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/pictures");
+      const data: string[] = await response.json();
+      console.log("🔍 Données visages chargées :", data);
 
-        for (const item of data) {
-          const img = await faceapi.fetchImage(item.url);
+      const descriptions: faceapi.LabeledFaceDescriptors[] = [];
+
+      for (const url of data) {
+        if (!url || typeof url !== 'string') {
+          console.warn(`❌ URL invalide : ${url}`);
+          continue;
+        }
+
+        const fileName = url.split("/").pop(); // ex: "Yvann_De Souza_1751467128.jpg"
+        const label = fileName?.split(".")[0] ?? "unknown"; // remove .jpg
+
+        try {
+          const img = await faceapi.fetchImage(url);
+
           const detection = await faceapi
             .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
             .withFaceLandmarks()
             .withFaceDescriptor();
 
-          if (!detection) continue;
-          descriptions.push(new faceapi.LabeledFaceDescriptors(item.label, [detection.descriptor]));
-        }
+          if (!detection) {
+            console.warn(`⚠️ Aucun visage détecté pour ${label}`);
+            continue;
+          }
 
-        if (descriptions.length > 0) {
-          setFaceMatcher(new faceapi.FaceMatcher(descriptions, 0.6));
-          console.log("✅ Visages connus chargés");
+          descriptions.push(new faceapi.LabeledFaceDescriptors(label, [detection.descriptor]));
+        } catch (err) {
+          console.error(`❌ Erreur chargement image ${url}`, err);
         }
-      } catch (error) {
-        console.error("Erreur chargement visages :", error);
       }
-    };
 
-    if (modelsLoaded) loadKnownFaces();
-  }, [modelsLoaded]);
+      if (descriptions.length > 0) {
+        setFaceMatcher(new faceapi.FaceMatcher(descriptions, 0.6));
+        console.log("✅ Visages connus chargés");
+      }
+    } catch (error) {
+      console.error("❌ Erreur chargement visages :", error);
+    }
+  };
+
+  if (modelsLoaded) loadKnownFaces();
+}, [modelsLoaded]);
 
   // Détection live
   useEffect(() => {
@@ -97,8 +117,10 @@ const FaceRecognition = () => {
           synth.cancel();
 
           if (label !== "unknown") {
+            console.log(`✅ ${label} reconnu`);
             synth.speak(new SpeechSynthesisUtterance("Accès autorisé - Merci d'entrer"));
           } else {
+            console.warn("❌ Visage inconnu - Accès interdit");
             synth.speak(new SpeechSynthesisUtterance("Visage inconnu - Accès interdit"));
           }
 
