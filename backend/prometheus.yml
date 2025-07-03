@@ -5,7 +5,7 @@ global:
 scrape_configs:
   - job_name: 'hacksquad_app'
     static_configs:
-      - targets: ['hacksquad:8080']   # Si tu exposes /metrics dans FastAPI
+      - targets: ['hacksquad:8000']   # Si tu exposes /metrics dans FastAPI
 
   - job_name: 'mysql'
     static_configs:

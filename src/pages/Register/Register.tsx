@@ -114,29 +114,29 @@ const Register: React.FC = () => {
   };
 
   const uploadPhotoToServer = async (photoData: string, nom: string, prenom: string) => {
-  try {
-    const blob = await fetch(photoData).then(res => res.blob());
-    const formData = new FormData();
-    formData.append('name', nom);
-    formData.append('surname', prenom);
-    formData.append('image', blob, `student_${Date.now()}.jpg`);
+    try {
+      const blob = await fetch(photoData).then(res => res.blob());
+      const formData = new FormData();
+      formData.append('name', nom);
+      formData.append('surname', prenom);
+      formData.append('image', blob, `student_${Date.now()}.jpg`);
 
-    const response = await fetch("http://127.0.0.1:8000/upload", {
-      method: 'POST',
-      body: formData,
-    });
+      const response = await fetch("http://127.0.0.1:8000/upload", {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to upload image');
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const result = await response.json();
+      return result.filePath;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      throw error;
     }
-
-    const result = await response.json();
-    return result.filePath;
-  } catch (error) {
-    console.error('Error uploading photo:', error);
-    throw error;
-  }
-};
+  };
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,6 +153,7 @@ const Register: React.FC = () => {
         photoUrl = await uploadPhotoToServer(formData.photo, formData.nom, formData.prenom);
       }
 
+      // Match these field names exactly with your backend schema
       const requestBody = {
         Nom: formData.nom,
         Prenom: formData.prenom,
@@ -160,16 +161,19 @@ const Register: React.FC = () => {
         Date_de_naissance: formData.dateNaissance,
         Photo: photoUrl
       };
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students`, {
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/students/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        credentials: 'include'
       });
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || t.error);
       }
 
       await response.json();

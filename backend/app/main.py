@@ -69,7 +69,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -200,8 +200,9 @@ async def post_message(request: MessageRequest):
  
 
 @app.post("/students/", response_model=schemas.PatientBase, operation_id="create_student")
-@limiter.limit("5/minute")
+# @limiter.limit("5/minute")
 def create_student(request: Request, student: schemas.PatientBase, db: Session = Depends(get_db)):
+    logger.info(f"Received student data: {student.dict()}")
     if crud.get_student_by_email(db, student.Email):
         raise HTTPException(status_code=400, detail="L'étudiant existe déjà")
     return crud.create_student(db, student)

@@ -5,16 +5,16 @@ services:
     env_file:
       - .env
     ports:
-      - "8000:8080"
+      - "8000:8000"
     environment:
-      - PORT=8080
+      - PORT=8000
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
     volumes:
       - .:/app
       - ./credentials.json:/app/credentials.json
 
     command: >
-      gunicorn --bind :8080 --workers 1 --worker-class uvicorn.workers.UvicornWorker --threads 8 app.main:app
+      gunicorn --bind :8000 --workers 1 --worker-class uvicorn.workers.UvicornWorker --threads 8 app.main:app
   prometheus:
     image: prom/prometheus:v2.45.0
     container_name: prometheus
