@@ -121,7 +121,7 @@ const Register: React.FC = () => {
       formData.append('surname', prenom);
       formData.append('image', blob, `student_${Date.now()}.jpg`);
 
-      const response = await fetch("http://127.0.0.1:8000/upload", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -153,7 +153,6 @@ const Register: React.FC = () => {
         photoUrl = await uploadPhotoToServer(formData.photo, formData.nom, formData.prenom);
       }
 
-      // Match these field names exactly with your backend schema
       const requestBody = {
         Nom: formData.nom,
         Prenom: formData.prenom,
