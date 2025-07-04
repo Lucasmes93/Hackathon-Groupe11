@@ -11,7 +11,7 @@ const FaceRecognition = () => {
   const [lastRecognized, setLastRecognized] = useState<string | null>(null);
   const navigate = useNavigate();
  
-  // Chargement des modèles
+
   useEffect(() => {
     const loadModels = async () => {
       const MODEL_URL = import.meta.env.BASE_URL + "models";
@@ -30,11 +30,11 @@ const FaceRecognition = () => {
     loadModels();
   }, []);
  
-  // Chargement des visages connus
+
   useEffect(() => {
     const loadKnownFaces = async () => {
       try {
-        const response = await fetch("http://localhost:8000/pictures");
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/pictures`);
         const data: string[] = await response.json();
         console.log("🔍 Données visages chargées :", data);
  
@@ -46,8 +46,8 @@ const FaceRecognition = () => {
             continue;
           }
  
-          const fileName = url.split("/").pop(); // ex: "Yvann_De Souza_1751467128.jpg"
-          const label = fileName?.split(".")[0] ?? "unknown"; // remove .jpg
+          const fileName = url.split("/").pop();
+          const label = fileName?.split(".")[0] ?? "unknown";
  
           try {
             const img = await faceapi.fetchImage(url);
@@ -80,7 +80,7 @@ const FaceRecognition = () => {
     if (modelsLoaded) loadKnownFaces();
   }, [modelsLoaded]);
  
-  // Détection live
+ 
   useEffect(() => {
     if (!modelsLoaded || !faceMatcher) return;
  
@@ -125,7 +125,6 @@ const FaceRecognition = () => {
             console.warn("❌ Visage inconnu - Accès interdit");
             synth.speak(new SpeechSynthesisUtterance("Visage inconnu - Accès interdit"));
           }
- 
           setLastRecognized(label);
         }
  
@@ -143,7 +142,6 @@ const FaceRecognition = () => {
  
   return (
     <div className="app-container">
- 
       <div className="card-container">
         <div className="camera-container">
           <Webcam ref={webcamRef} audio={false} className="webcam" />

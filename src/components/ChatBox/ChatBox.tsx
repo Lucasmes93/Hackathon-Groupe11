@@ -18,7 +18,7 @@ const ChatBox: React.FC = () => {
   useEffect(() => {
     const initializeSession = async () => {
       try {
-        const response = await fetch('http://localhost:8000/mcp/sessions/', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/mcp/sessions/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ const ChatBox: React.FC = () => {
     setMessages(prev => [...prev, { text: '', sender: 'bot', isTyping: true }]);
 
     try {
-      const response = await fetch('http://localhost:8000/mcp/messages/', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/mcp/messages/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

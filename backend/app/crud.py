@@ -6,7 +6,7 @@ def get_student_by_email(db: Session, email: str):
     return db.query(models.Student).filter(models.Student.Email == email).first()
 
 
-def create_student(db: Session, student: schemas.PatientBase):
+def create_student(db: Session, student: schemas.StudentBase):
     db_student = models.Student(
         Nom=student.Nom,
         Prenom=student.Prenom,

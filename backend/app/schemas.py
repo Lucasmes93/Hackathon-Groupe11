@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import date
 
 
-class PatientBase(BaseModel):
+class StudentBase(BaseModel):
     Nom: str
     Prenom: str
     Email: str

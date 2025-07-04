@@ -38,11 +38,7 @@ class MessageRequest(BaseModel):
     query: str
 
 
-
-
-
 setup_logging()
-
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -205,16 +201,16 @@ async def post_message(request: MessageRequest):
     return StreamingResponse(generate_stream(), media_type="text/event-stream")
  
 
-@app.post("/students/", response_model=schemas.PatientBase, operation_id="create_student")
-# @limiter.limit("5/minute")
-def create_student(request: Request, student: schemas.PatientBase, db: Session = Depends(get_db)):
+@app.post("/students/", response_model=schemas.StudentBase, operation_id="create_student")
+@limiter.limit("5/minute")
+def create_student(request: Request, student: schemas.StudentBase, db: Session = Depends(get_db)):
     logger.info(f"Received student data: {student.dict()}")
     if crud.get_student_by_email(db, student.Email):
         raise HTTPException(status_code=400, detail="L'étudiant existe déjà")
     return crud.create_student(db, student)
 
 
-@app.get("/students/", response_model=list[schemas.PatientBase], operation_id="retrieve_student")
+@app.get("/students/", response_model=list[schemas.StudentBase], operation_id="retrieve_student")
 def read_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     return crud.get_students(db, skip=skip, limit=limit)
 
