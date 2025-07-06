@@ -131,3 +131,6 @@ Ce projet est sous licence [MIT](LICENSE) (à adapter selon votre cas).
 Merci à tous les membres de l’équipe, aux encadrants et à l’école Estiam pour leur soutien lors de ce hackathon !
 
 ---
+
+## Démo de l'application
+[![Watch the demo](https://img.youtube.com/vi/nXD0ZHyaxFw/0.jpg)](https://www.youtube.com/watch?v=nXD0ZHyaxFw)
